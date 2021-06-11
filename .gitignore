@@ -1,0 +1,26 @@
+
+# Model checkpoints
+*.pt
+*.csv
+*.zip
+
+# disctribution
+build/
+dist/
+*.egg-info
+
+.DS_Store
+__pycache__/
+
+.ipynb_checkpoints/
+.vscode/
+# Data folders
+
+# API keys
+aws_key*
+gcp_*
+image_api_key*
+
+data/*
+!data/video_scripts
+!data/linux*
