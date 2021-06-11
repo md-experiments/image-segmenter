@@ -1,0 +1,11 @@
+version: '2'
+services:
+  WebServices:
+      image: 'md_segmenter:latest'
+      ports:
+        - '8060:8000'
+      networks:
+        - app-tier
+networks:
+  app-tier:
+    driver: bridge

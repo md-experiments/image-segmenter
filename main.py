@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
-from segmentation_api.source import Segmentation
-from segmentation_api.service_definitions import SegmentResponse, SegmentRequest,invoke_segmentation
+from source.segmenter import Segmentation
+from source.service_definitions import SegmentResponse, SegmentRequest,invoke_segmentation
 
 
 app = FastAPI(title="Endeavour Video Editor Service",
@@ -15,13 +15,14 @@ tags_metadata=[
     },
 ]
 
-sgm = Segmentation()
+
 
 print("--> " + os.getcwd())
 
-@app.post("/segmentation/", tags=["SegmentImage"], response_model=SegmentResponse, status_code=200)
+@app.post("/segmentation/", tags=["ImageSegmenter"], response_model=SegmentResponse, status_code=200)
 def reqestContentSummarisation(segRequest:SegmentRequest):
     print("About to call")
+    sgm = Segmentation()
     return invoke_segmentation(segRequest, sgm)
 
-print("Transcriber Started Successfully")
+print("Image Segmenter Started Successfully")
