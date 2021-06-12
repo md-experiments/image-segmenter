@@ -79,11 +79,10 @@ class Segmentation():
         self.class_names = yaml.full_load(open(class_names_path))
     
     def run_list_segmentation(self, image_set, output_path = './'):
-        output_dict = {}
         for img in image_set:
             output_files = self.run_segmentation(img['image_path'], img['image_file_name'], output_path = output_path)
-            output_dict[img['image_file_name']] = output_files
-        return output_dict
+            img['output_files'] = output_files
+        return image_set
 
     def run_segmentation(self, image_path, file_name, output_path = './'):
         output_files = []
