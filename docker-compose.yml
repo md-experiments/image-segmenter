@@ -2,6 +2,8 @@ version: '2'
 services:
   WebServices:
       image: 'md_segmenter:latest'
+      volumes:
+        - ./data:/app/data
       ports:
         - '8060:8000'
       networks:
