@@ -83,13 +83,13 @@ class Segmentation():
         # the teddy bear class, use: class_names.index('teddy bear')
         self.class_names = yaml.full_load(open(class_names_path))
     
-    def run_list_segmentation(self, image_set, output_path = './'):
+    def run_list_segmentation(self, image_set, output_path, color):
         for img in image_set:
-            output_files = self.run_segmentation(img['image_path'], img['image_file_name'], output_path = output_path)
+            output_files = self.run_segmentation(img['image_path'], img['image_file_name'], color, output_path = output_path)
             img['output_files'] = output_files
         return image_set
 
-    def run_segmentation(self, image_path, file_name, output_path = './'):
+    def run_segmentation(self, image_path, file_name, color, output_path = './'):
         output_files = []
         file_path = os.path.join(image_path,file_name)
         #'../../../auto_vlogger/auto_vlog/static/spacex_musk/raw_images/106806377-1607090600215-gettyimages-1229893101-AFP_8WA6E2.jpeg'
@@ -101,7 +101,7 @@ class Segmentation():
         self.save_image(img_path,masked_image)
         output_files.append(img_path)
         for mask_idx in range(len(results['scores'])):
-            masked_image = self.image_segment(mask_idx, image, results, min_perc_image = 0.05, color = None)
+            masked_image = self.image_segment(mask_idx, image, results, min_perc_image = 0.05, color = color)
             img_path = os.path.join(output_path,f'{file_name}_{mask_idx}.jpg')
             if len(masked_image)>0:
                 print('Saved',img_path)

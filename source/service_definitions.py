@@ -2,6 +2,7 @@ import uuid,json
 from typing import Optional
 from pydantic import BaseModel,Field
 from source.utils import get_a_uuid, print_attributes, make_dirs
+import colorsys
 
 class SegmentRequest(BaseModel):
     user_id: str  = Field(...,example="user1234")
@@ -10,11 +11,13 @@ class SegmentRequest(BaseModel):
         "image_file_name": "saturday-night-live-elon-musk.jpg"
         }])
     output_path: str  = Field(...,example="./")
+    color_rgb: tuple = Field(...,example=(0, 0, 102))
 
 class SegmentResponse(BaseModel):
     requestId: str = Field(..., example="1234")
     user_id: str  = Field(...,example="user1234")
     output_path: str  = Field(...,example="./")
+    color_rgb: tuple = Field(...,example=(0, 0, 102))
     results: list = Field(...,example=[{
         "image_path": "./",
         "image_file_name": "saturday-night-live-elon-musk.jpg",
@@ -30,7 +33,9 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
     #try:
     messages = ''
     make_dirs([sgmRequest.output_path])
-    results = sgm.run_list_segmentation(sgmRequest.image_set, sgmRequest.output_path, )
+
+    color = colorsys.hsv_to_rgb(*sgmRequest.color_rgb)
+    results = sgm.run_list_segmentation(image_set = sgmRequest.image_set, output_path = sgmRequest.output_path, color = color)
     success_code = 200
     #except Exception as inst:
     #    messages = str(inst)
@@ -41,6 +46,7 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
         requestId = requestId,
         user_id = sgmRequest.user_id,
         output_path = sgmRequest.output_path, 
+        color_rgb = sgmRequest.color_rgb,
         results = results,
         success_code = success_code,
         exception_message = messages
