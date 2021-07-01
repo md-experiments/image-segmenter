@@ -5,6 +5,7 @@ import sys
 import numpy as np
 import skimage.io
 import yaml
+import tensorflow as tf
 #import matplotlib
 #import matplotlib.pyplot as plt
 from mrcnn.config import Config
@@ -70,8 +71,12 @@ class Segmentation():
         # Create model object in inference mode.
         model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
         # Load weights trained on MS-COCO
-        model.load_weights(coco_model_path, by_name=True)
-        self.model = model
+        global graph
+        graph = tf.get_default_graph()
+        with graph.as_default():
+            model.load_weights(coco_model_path, by_name=True)
+            #model._make_predict_function()
+            self.model = model
 
         # COCO Class names
         # Index of the class in the list is its ID. For example, to get ID of

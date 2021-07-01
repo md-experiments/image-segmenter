@@ -1,7 +1,7 @@
 import uuid,json
 from typing import Optional
 from pydantic import BaseModel,Field
-from source.utils import get_a_uuid, print_attributes
+from source.utils import get_a_uuid, print_attributes, make_dirs
 
 class SegmentRequest(BaseModel):
     user_id: str  = Field(...,example="user1234")
@@ -29,6 +29,7 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
     print_attributes(sgmRequest)
     #try:
     messages = ''
+    make_dirs([sgmRequest.output_path])
     results = sgm.run_list_segmentation(sgmRequest.image_set, sgmRequest.output_path, )
     success_code = 200
     #except Exception as inst:
