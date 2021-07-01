@@ -102,7 +102,7 @@ class Segmentation():
         output_files.append(img_path)
         for mask_idx in range(len(results['scores'])):
             masked_image = self.image_segment(mask_idx, image, results, min_perc_image = 0.05, color = color)
-            img_path = os.path.join(output_path,f'{file_name}_{mask_idx}.jpg')
+            img_path = os.path.join(output_path,f"{file_name.replace('.jpg','').replace('.jpeg','')}_{mask_idx}.jpg")
             if len(masked_image)>0:
                 print('Saved',img_path)
                 self.save_image(img_path,masked_image)

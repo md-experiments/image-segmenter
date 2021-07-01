@@ -7,10 +7,10 @@ import colorsys
 class SegmentRequest(BaseModel):
     user_id: str  = Field(...,example="user1234")
     image_set: list = Field(...,example=[{
-        "image_path": "./",
+        "image_path": "../data/video_images",
         "image_file_name": "saturday-night-live-elon-musk.jpg"
         }])
-    output_path: str  = Field(...,example="./")
+    output_path: str  = Field(...,example="../data/video_segments")
     color_rgb: tuple = Field(...,example=(0, 0, 102))
 
 class SegmentResponse(BaseModel):
@@ -19,7 +19,7 @@ class SegmentResponse(BaseModel):
     output_path: str  = Field(...,example="./")
     color_rgb: tuple = Field(...,example=(0, 0, 102))
     results: list = Field(...,example=[{
-        "image_path": "./",
+        "image_path": "../data/video_images",
         "image_file_name": "saturday-night-live-elon-musk.jpg",
         'output_files': ['segment_0.jpg','segment_1.jpg',]
         }])
@@ -27,7 +27,7 @@ class SegmentResponse(BaseModel):
     exception_message: str
 
 def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
-    print("YouTube Download Request Received")
+    print("########## Segmentation Request Received ##########")
     requestId = get_a_uuid()
     print_attributes(sgmRequest)
     #try:
@@ -51,4 +51,6 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
         success_code = success_code,
         exception_message = messages
     )
+    print("########## Segmentation Request Completed ##########")
+    print_attributes(response)
     return response
