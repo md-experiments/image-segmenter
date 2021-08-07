@@ -63,7 +63,7 @@ class RepoManager:
         # self.displayConfig()
 
 
-cfg = config.load("../minio_config.yml")
+cfg = config.load("./minio_config.yml")
 
 MINIO_CONFIG_NAME = os.environ.get('CONTENT_MANAGER_CONFIG','')
 MINIO_BUCKET_NAME = os.environ.get('CONTENT_MANAGER_BUCKET','')

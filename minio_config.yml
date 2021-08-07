@@ -1,0 +1,26 @@
+version : 1.0
+name : DockerCompose-Config
+frontend_local_view:
+    tempStorage : ./app/uploads/
+    Server:
+        ip: localhost:7084
+        access_key : minio-access-key
+        secret_key : minio-secret-key
+        region : us-east-1
+        secure : False
+backend_local_view:
+    tempStorage : ./app/uploads/
+    Server:
+        ip: contentserver:9000
+        access_key : minio-access-key
+        secret_key : minio-secret-key
+        region : us-east-1
+        secure : False
+backend_aws_view:
+    tempStorage : ./app/uploads/
+    Server:
+        ip: SOME_AWS_ADDRESS:9000
+        access_key : minio-access-key
+        secret_key : minio-secret-key
+        region : us-east-1
+        secure : False
