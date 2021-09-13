@@ -65,10 +65,10 @@ class RepoManager:
 
 cfg = config.load("./minio_config.yml")
 
-MINIO_CONFIG_NAME = os.environ.get('CONTENT_MANAGER_CONFIG','')
-MINIO_BUCKET_NAME = os.environ.get('CONTENT_MANAGER_BUCKET','')
+MINIO_CONFIG_NAME = os.environ.get('MINIO_CONFIG_NAME','')
+MINIO_BUCKET_NAME = os.environ.get('MINIO_BUCKET_NAME','')
 
-if MINIO_CONFIG_NAME != '' and MINIO_BUCKET_NAME != '' and MINIO_CONFIG_NAME in cfg:
+if MINIO_CONFIG_NAME != '' and MINIO_BUCKET_NAME != '':
     rm = RepoManager(cfg, MINIO_CONFIG_NAME) # 'frontend_local_view'
 else:
     print('######## WARNING: MINIO SETUP NOT IN USE ########')
@@ -78,31 +78,33 @@ else:
     print('######## WARNING: MINIO SETUP NOT IN USE ########')
     rm = None
 
-def upload_to_minio(ls_files, path):
+def upload_to_minio(ls_files, source_path, bucket_path):
     if rm:
         try:
             rm.createBucket(MINIO_BUCKET_NAME)
             for file in ls_files:
-                file = os.path.join(path,file)
-                upload_path = file.split('../')[-1]
-                rm.uploadMedia(MINIO_BUCKET_NAME, upload_path, file)
+                local_file = os.path.join(source_path,file)
+                upload_path = os.path.join(bucket_path,file)
+                print(upload_path)
+                rm.uploadMedia(MINIO_BUCKET_NAME, upload_path, local_file)
         except Exception as exception: 
             print(exception)
 
-def download_from_minio(ls_files, path):
+def download_from_minio(ls_files, source_path, bucket_path):
     if rm:
         rm.createBucket(MINIO_BUCKET_NAME)
-        for file in ls_files:
-            file = os.path.join(path,file)
-            upload_path = file.split('../')[-1]
-            rm.downloadMedia(MINIO_BUCKET_NAME, upload_path, file)
+    for file in ls_files:
+            local_file = os.path.join(source_path,file)
+            upload_path = os.path.join(bucket_path,file)
+            print(upload_path)
+            rm.downloadMedia(MINIO_BUCKET_NAME, upload_path, local_file)
 
-def remove_from_minio(ls_files, path):
+def remove_from_minio(ls_files, source_path, bucket_path):
     if rm:
         rm.createBucket(MINIO_BUCKET_NAME)
         for file in ls_files:
-            file = os.path.join(path,file)
-            upload_path = file.split('../')[-1]
+            local_file = os.path.join(source_path,file)
+            upload_path = os.path.join(bucket_path,file)
             rm.removeMedia(MINIO_BUCKET_NAME, upload_path)
 
 def remove_folder_from_minio(path):

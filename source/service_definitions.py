@@ -38,7 +38,8 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
     color = colorsys.hsv_to_rgb(*sgmRequest.color_rgb)
     results = sgm.run_list_segmentation(image_set = sgmRequest.image_set, output_path = sgmRequest.output_path, color = color)
     for result in results:
-        upload_to_minio(result['output_files'], os.path.join(sgmRequest.user_id, sgmRequest.output_path))
+        upload_to_minio(result['output_files'], 
+            os.path.join(sgmRequest.user_id, sgmRequest.output_path).replace('../',''))
     success_code = 200
     #except Exception as inst:
     #    messages = str(inst)
