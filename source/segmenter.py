@@ -71,45 +71,62 @@ class Segmentation():
         # Create model object in inference mode.
         model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
         # Load weights trained on MS-COCO
-        global graph
         graph = tf.get_default_graph()
-        with graph.as_default():
-            model.load_weights(coco_model_path, by_name=True)
-            #model._make_predict_function()
-            self.model = model
+        print(globals())
+
+        if 'graph' not in globals():
+            print('graph not found')
+            with graph.as_default():
+                model.load_weights(coco_model_path, by_name=True)
+                #model._make_predict_function()
+                self.model = model
 
         # COCO Class names
         # Index of the class in the list is its ID. For example, to get ID of
         # the teddy bear class, use: class_names.index('teddy bear')
         self.class_names = yaml.full_load(open(class_names_path))
     
-    def run_list_segmentation(self, image_set, output_path, color):
+    def run_list_segmentation(self, image_set, output_path, color, edgecolor):
         for img in image_set:
-            output_files = self.run_segmentation(img['image_path'], img['image_file_name'], color, output_path = output_path)
+            output_files, output_classes, output_masks, output_boxes, combined_file = self.run_segmentation(img['image_path'], img['image_file_name'], color = color, edgecolor = edgecolor,
+                output_path = output_path)
+            img['combined_file'] = combined_file
             img['output_files'] = output_files
+            img['output_classes'] = output_classes
+            img['output_masks'] = output_masks
+            img['output_boxes'] = output_boxes
         return image_set
 
-    def run_segmentation(self, image_path, file_name, color, output_path = './'):
+    def run_segmentation(self, image_path, file_name, color, edgecolor, output_path = './'):
         output_files = []
+        output_classes = []
+        output_masks = []
+        output_boxes = []
         file_path = os.path.join(image_path,file_name)
         #'../../../auto_vlogger/auto_vlog/static/spacex_musk/raw_images/106806377-1607090600215-gettyimages-1229893101-AFP_8WA6E2.jpeg'
         image = skimage.io.imread(file_path)
         results = self.model.detect([image], verbose=1)[0]
 
-        masked_image = self.all_segments(image, results['rois'], results['masks'], results['class_ids'], self.class_names, results['scores'])
-        img_path = os.path.join(output_path,f'{file_name}_all.jpg')
-        self.save_image(img_path,masked_image)
-        output_files.append(img_path)
+        masked_image = self.all_segments(image, results['rois'], results['masks'], 
+                results['class_ids'], self.class_names, results['scores'], edgecolor=edgecolor)
+        combined_file = os.path.join(output_path,f'{file_name}_all.jpg')
+        self.save_image(combined_file,masked_image)
+
         for mask_idx in range(len(results['scores'])):
             masked_image = self.image_segment(mask_idx, image, results, min_perc_image = 0.05, color = color)
             img_path = os.path.join(output_path,f"{file_name.replace('.jpg','').replace('.jpeg','')}_{mask_idx}.jpg")
+            mask_path = os.path.join(output_path,f"{file_name.replace('.jpg','').replace('.jpeg','')}_{mask_idx}_MASK.jpg")
             if len(masked_image)>0:
                 print('Saved',img_path)
                 self.save_image(img_path,masked_image)
+                self.save_image(mask_path,results['masks'][:, :, mask_idx])
                 output_files.append(img_path)
+                output_masks.append(mask_path)
+                output_boxes.append(results['rois'][mask_idx].tolist())
+                output_classes.append(self.class_names[results['class_ids'][mask_idx]])
             else:
                 print('Too small',img_path)
-        return output_files
+        return output_files, output_classes, output_masks, output_boxes, combined_file
 
     def image_segment(self, mask_id, image, results, min_perc_image = 0.05, color = None):
         masked_image = image.astype(np.uint32).copy()
@@ -132,7 +149,7 @@ class Segmentation():
                         scores=None, title="",
                         figsize=(16, 16), ax=None,
                         show_mask=True, show_bbox=True,
-                        colors=None, captions=None):
+                        colors=None, captions=None, edgecolor=None):
         """
         'INSPIRED' by visualize.display_instances
         boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
@@ -192,11 +209,17 @@ class Segmentation():
             padded_mask = np.zeros(
                 (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
             padded_mask[1:-1, 1:-1] = mask
-            contours = find_contours(padded_mask, 0.5)
+            contours = find_contours(padded_mask, 1.5)
+            if edgecolor == None:
+                edgecolor = color
+            print(masked_image.shape)
             for verts in contours:
                 # Subtract the padding and flip (y, x) to (x, y)
                 verts = np.fliplr(verts) - 1
-                p = Polygon(verts, facecolor="none", edgecolor=color)
+                print(verts.shape)
+                p = Polygon(verts, facecolor="none", edgecolor=edgecolor)
+                
+                masked_image = masked_image + verts
                 #ax.add_patch(p)
         return masked_image.astype(np.uint8)
             

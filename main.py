@@ -1,8 +1,7 @@
 import os
 from fastapi import FastAPI
-from source.segmenter import Segmentation
 from source.service_definitions import SegmentResponse, SegmentRequest,invoke_segmentation
-
+from source.segmenter import Segmentation
 
 app = FastAPI(title="Endeavour Image Segmentation Service",
               description="API for video editing, transcription and rendering",
@@ -24,7 +23,7 @@ def reqestImageSegmentation(segRequest:SegmentRequest):
     print("About to call")
     sgm = Segmentation()
     result = invoke_segmentation(segRequest, sgm)
-    del sgm
+    #del sgm
     return result
 
 print("Image Segmenter Started Successfully")

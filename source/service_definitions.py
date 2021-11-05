@@ -5,6 +5,8 @@ from source.utils import get_a_uuid, print_attributes, make_dirs
 from source.content_management import upload_to_minio
 import colorsys
 
+
+
 class SegmentRequest(BaseModel):
     user_id: str  = Field(...,example="user1234")
     image_set: list = Field(...,example=[{
@@ -13,12 +15,14 @@ class SegmentRequest(BaseModel):
         }])
     output_path: str  = Field(...,example="../data/video_segments")
     color_rgb: tuple = Field(...,example=(0, 0, 102))
+    edgecolor_rgb: tuple = Field(...,example=(0, 0, 102))
 
 class SegmentResponse(BaseModel):
     requestId: str = Field(..., example="1234")
     user_id: str  = Field(...,example="user1234")
     output_path: str  = Field(...,example="./")
     color_rgb: tuple = Field(...,example=(0, 0, 102))
+    edgecolor_rgb: tuple = Field(...,example=(38, 38, 38))
     results: list = Field(...,example=[{
         "image_path": "../data/video_images",
         "image_file_name": "saturday-night-live-elon-musk.jpg",
@@ -36,9 +40,15 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
     make_dirs([sgmRequest.output_path])
 
     color = colorsys.hsv_to_rgb(*sgmRequest.color_rgb)
-    results = sgm.run_list_segmentation(image_set = sgmRequest.image_set, output_path = sgmRequest.output_path, color = color)
+    edgecolor = colorsys.hsv_to_rgb(*sgmRequest.edgecolor_rgb)
+    results = sgm.run_list_segmentation(image_set = sgmRequest.image_set, 
+                output_path = sgmRequest.output_path, color = color, edgecolor = edgecolor)
     for result in results:
         upload_to_minio(result['output_files'], 
+            sgmRequest.output_path,
+            os.path.join(sgmRequest.user_id, sgmRequest.output_path).replace('../',''))
+        upload_to_minio(result['output_masks'], 
+            sgmRequest.output_path,
             os.path.join(sgmRequest.user_id, sgmRequest.output_path).replace('../',''))
     success_code = 200
     #except Exception as inst:
@@ -51,6 +61,7 @@ def invoke_segmentation(sgmRequest:SegmentRequest, sgm):
         user_id = sgmRequest.user_id,
         output_path = sgmRequest.output_path, 
         color_rgb = sgmRequest.color_rgb,
+        edgecolor_rgb = sgmRequest.edgecolor_rgb,
         results = results,
         success_code = success_code,
         exception_message = messages
