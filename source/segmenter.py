@@ -72,14 +72,14 @@ class Segmentation():
         model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
         # Load weights trained on MS-COCO
         graph = tf.get_default_graph()
-        print(globals())
+        #print(globals())
 
-        if 'graph' not in globals():
-            print('graph not found')
-            with graph.as_default():
-                model.load_weights(coco_model_path, by_name=True)
-                #model._make_predict_function()
-                self.model = model
+        #if 'graph' not in globals():
+        #    print('graph not found')
+        with graph.as_default():
+            model.load_weights(coco_model_path, by_name=True)
+            #model._make_predict_function()
+            self.model = model
 
         # COCO Class names
         # Index of the class in the list is its ID. For example, to get ID of
